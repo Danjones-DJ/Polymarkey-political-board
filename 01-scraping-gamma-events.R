@@ -49,6 +49,7 @@ m <- events[[1]][[1]]
 events_dataframe = map_dfr(events, function(event)  {
   
   row = tibble(
+    event_id = event[[1]]$id,
     start_date = as.Date(event[[1]]$startDate), 
     end_date = as.Date(event[[1]]$endDate),
     
@@ -94,8 +95,8 @@ EVENTS = events_clean %>%
     price_list = map(outcome_prices, fromJSON),
     
     # List outcomes
-    outcome_1 = map_chr(outcome_list, 1),
-    outcome_2 = map_chr(outcome_list, 2),
+    outcome_1 = str_squish(map_chr(outcome_list, 1)),
+    outcome_2 = str_squish(map_chr(outcome_list, 2)),
     
     # List prices
     price_1 = as.numeric(map_chr(price_list, 1)),
@@ -104,14 +105,31 @@ EVENTS = events_clean %>%
     # Summary var
     predicted_outcome = ifelse(
       price_1 > price_2, 
+      outcome_1,
+      outcome_2
+    ),
+    
+    # State the outcome in context
+    predicted_outcome_statement = ifelse(
+      price_1 > price_2, 
       glue("{question}: {outcome_1} (~{price_1 * 100}%)"),
       glue("{question}: {outcome_2} (~{price_2 * 100}%)")
-    )
-  )
+      ),
+    
+    # How far above 50% confidence?
+    confidence_margin = ifelse(
+      price_1 > price_2,
+      price_1 - 0.5,
+      price_2 - 0.5
+    ),
+    SCRAPING_DATE = Sys.Date()
+    
+    ) %>%
+  select(-outcomes, -outcome_prices)
 
-# View(EVENTS)
 
-# 07: Data Vis ------------------------------------------------------------
+# 07: Save! ---------------------------------------------------------------
+saveRDS(EVENTS, "data/EVENTS.rds")
 
 
 
