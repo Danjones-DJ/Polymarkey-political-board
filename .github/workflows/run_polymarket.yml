@@ -24,3 +24,10 @@ jobs:
 
       - name: Run scraper
         run: Rscript run_all.R
+
+      - name: Publish Datawrapper chart
+        run: |
+          curl -X POST "https://api.datawrapper.de/v3/charts/${{ secrets.DATAWRAPPER_CHART_ID }}/publish" \
+            -H "Authorization: Bearer ${{ secrets.DATAWRAPPER_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"callWebhooks": true}'
