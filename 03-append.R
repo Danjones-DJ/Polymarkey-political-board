@@ -11,7 +11,7 @@ SHEET_ID <- "1MkwXGz_sDRqNw_U-m33ypFenRryhDLY06g_ZI3sGkQ0"
 
 # new scrape
 new_rows <- read_rds("data/EVENTS.rds") %>%
-  mutate(scraping_date = today())
+  mutate(SCRAPING_DATE = today())
 
 # existing sheet
 old_rows <- read_sheet(SHEET_ID)
@@ -22,6 +22,9 @@ rows_to_append <- new_rows %>%
     old_rows %>% select(EVENT_ID, SCRAPING_DATE),
     by = c("EVENT_ID", "SCRAPING_DATE")
   )
+
+rows_to_append <- rows_to_append %>%
+  select(names(old_rows))   # force exact column set + order of the sheet
 
 # append only if there is something new
 if (nrow(rows_to_append) > 0) {
